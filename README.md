@@ -29,7 +29,7 @@ raw_taf = (
 )
 
 taf = Taf.from_text(raw_taf)
-metar = Metar.from_text(text)
+metar = Metar.from_text(raw_metar)
 ```
 
 Access their attributes
