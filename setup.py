@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(name='metafora',
       version='0.1.0',
@@ -7,7 +7,7 @@ setup(name='metafora',
       author='Ramon Dalmau-Codina',
       author_email='ramon.dalmau.codina@gmail.com',
       url='https://github.com/ramondalmau/metafora.git',
-      packages=find_packages(),
+      packages=["metafora"],
       python_requires='>=3.7',
       install_requires=[
           'dataclasses>=0.6',
