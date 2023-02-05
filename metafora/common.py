@@ -24,18 +24,14 @@ WEATHER_MEMBERS = "|".join(
     .union(OtherWeather.members())
 )
 
-TIME_FORMAT = "(0[0-9]|1[0-9]|2[0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-3])([0-5][0-9])"
+TIME_FORMAT = "(0[0-9]|1[0-9]|2[0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-4])([0-5][0-9])"
 DIRECTION_FMT = "0[0-9][0-9]|1[0-9][0-9]|2[0-9][0-9]|3[0-5][0-9]|360"
 
 
-@dataclass_json
-@dataclass
-class Station:
+class Station(str):
     """
     Station class
     """
-
-    name: str
 
     @classmethod
     def from_text(cls, token: str):
@@ -50,7 +46,7 @@ class Station:
         if not found:
             return None
 
-        return cls(name=found[0])
+        return str(found[0])
 
 
 @dataclass_json

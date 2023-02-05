@@ -113,7 +113,7 @@ class Temperature:
     Temperature is expressed in degrees celcius
     """
 
-    value: Number
+    temperature: Number
     dewpoint: Optional[Number] = field(
         default=None, metadata=config(exclude=lambda x: x is None)
     )
@@ -139,18 +139,14 @@ class Temperature:
             # unknown dew point
             dewpoint = None
 
-        return cls(value=temperature, dewpoint=dewpoint)
+        return cls(temperature=temperature, dewpoint=dewpoint)
 
 
-@dataclass_json
-@dataclass
-class Pressure:
+class Pressure(int):
     """
     Pressure conditions
     Pressure is expressed in hPa
     """
-
-    value: Number
 
     @classmethod
     def from_text(cls, token: str):
@@ -177,7 +173,7 @@ class Pressure:
         else:
             pressure = None
 
-        return cls(value=pressure)
+        return int(pressure)
 
 
 @dataclass_json
@@ -207,4 +203,3 @@ class Metar(ParserMixIn):
     pressure: Optional[Pressure] = field(
         default=None, metadata=config(exclude=lambda x: x is None)
     )
-

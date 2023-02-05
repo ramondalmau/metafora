@@ -20,22 +20,18 @@ Parse raw METAR and TAF
 
 .. code:: python
 
-   from metarfora import Metar, Taf, propagate_forecasts
+    from metarfora import Metar, Taf, propagate_forecasts
 
-   raw_metar = "ULLI 041030Z 01005MPS 340V040 5000 R18R/1000FTD -SN SCT010 BKN018 VV000 M01/M05 A//// NOSIG"
-   raw_taf = (
-       "TAF EHAM 041118Z 0412/0518 21005KT 9999 BKN040"
-       "BECMG 0413/0416 7000 -DZ BKN012 "
-       "TEMPO 0415/0501 3500 DZ BKN006 "
-       "PROB30 TEMPO 0415/0501 2000 DZ BR BKN003 "
-       "BECMG 0423/0502 9999 NSW BKN025 "
-       "BECMG 0503/0506 35018KT RA"
-       "TEMPO 0503/0506 4000 -DZ BKN008 "
-       "BECMG 0515/0518 CAVOK 01008KT NSW"
-   )
+    raw_metar = "EHAM 051825Z 02007KT 340V050 9999 FEW017 06/03 Q1042 NOSIG"
+    raw_taf = "TAF EHAM 051721Z 0518/0624 36007KT CAVOK " \
+              "BECMG 0523/0602 4500 MIFG " \
+              "PROB30 TEMPO 0603/0609 0600 BCFG " \
+              "BECMG 0608/0611 VRB02KT CAVOK " \
+              "BECMG 0619/0622 4500 MIFG " \
+              "PROB30 TEMPO 0622/0624 0600 BCFG"
 
-   taf = Taf.from_text(raw_taf)
-   metar = Metar.from_text(raw_metar)
+    taf = Taf.from_text(raw_taf)
+    metar = Metar.from_text(raw_metar)
 
 Access their attributes
 
@@ -51,12 +47,12 @@ Convert to nested dictionary
    ...
    taf.to_dict()
 
-Process TAF periods
+Unify TAF forecasts
 
 .. code:: python
 
    ...
-   taf = propagate_forecasts(taf)
+   forecasts = unify_forecasts(taf.forecasts)
 
 Convert a list of forecasts to JSON and vice-versa
 
