@@ -2,8 +2,6 @@
 # coding: utf-8
 """
 metafora - taf
-Ramon Dalmau-Codina
-October 2022
 """
 from dataclasses import field, dataclass
 from dataclasses_json import dataclass_json, config

@@ -2,8 +2,6 @@
 # coding: utf-8
 """
 metafora - enumerators
-Ramon Dalmau-Codina
-October 2022
 """
 from enum import Enum
 

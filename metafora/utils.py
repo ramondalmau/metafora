@@ -2,8 +2,6 @@
 # coding: utf-8
 """
 metafora utilities
-Ramon Dalmau-Codina
-October 2022
 """
 from typing import Union
 

@@ -2,8 +2,6 @@
 # coding: utf-8
 """
 metafora - parser
-Ramon Dalmau-Codina
-October 2022
 """
 from dataclasses import fields, dataclass
 from typing import Union, get_origin, get_args

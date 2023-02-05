@@ -2,8 +2,6 @@
 # coding: utf-8
 """
 metafora - metar
-Ramon Dalmau-Codina
-October 2022
 """
 import re
 from dataclasses import field, dataclass
