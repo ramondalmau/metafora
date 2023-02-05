@@ -15,7 +15,8 @@ import warnings
 warnings.filterwarnings(action="ignore", category=UserWarning)
 
 from metafora.common import (
-    Context,
+    Station,
+    Timestamp,
     Wind,
     Visibility,
     Clouds,
@@ -96,7 +97,7 @@ class RunwayVisualRange:
             if found[5]:
                 distance_prefix = found[5]
 
-        return RunwayVisualRange(
+        return cls(
             runway=runway,
             distance=distance,
             distance_prefix=distance_prefix,
@@ -114,7 +115,7 @@ class Temperature:
     Temperature is expressed in degrees celcius
     """
 
-    temperature: Number
+    value: Number
     dewpoint: Optional[Number] = field(
         default=None, metadata=config(exclude=lambda x: x is None)
     )
@@ -140,14 +141,18 @@ class Temperature:
             # unknown dew point
             dewpoint = None
 
-        return cls(temperature=temperature, dewpoint=dewpoint)
+        return cls(value=temperature, dewpoint=dewpoint)
 
 
-class Pressure(int):
+@dataclass_json
+@dataclass
+class Pressure:
     """
     Pressure conditions
     Pressure is expressed in hPa
     """
+
+    value: Number
 
     @classmethod
     def from_text(cls, token: str):
@@ -174,16 +179,18 @@ class Pressure(int):
         else:
             pressure = None
 
-        return pressure
+        return cls(value=pressure)
 
 
 @dataclass_json
 @dataclass
-class Metar(ParserMixIn, Context):
+class Metar(ParserMixIn):
     """
     METAR dataclass
     """
 
+    station: Station
+    time: Timestamp
     wind: Wind
     visibility: Visibility
 
@@ -203,8 +210,3 @@ class Metar(ParserMixIn, Context):
         default=None, metadata=config(exclude=lambda x: x is None)
     )
 
-
-if __name__ == "__main__":
-    from pprint import pprint
-    text = "EHAM 050855Z 34017G27KT 300V010 9999 FEW020 SCT035 08/04 Q1039 NOSIG"
-    pprint(Metar.from_text(text))

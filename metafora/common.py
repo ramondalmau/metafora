@@ -18,6 +18,7 @@ from metafora.utils import (
 )
 from metafora.enums import *
 
+
 WEATHER_MEMBERS = "|".join(
     WeatherDescriptor.members()
     .union(WeatherPrecipitation.members())
@@ -29,10 +30,14 @@ TIME_FORMAT = "(0[0-9]|1[0-9]|2[0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-3])([0-5][0-9])"
 DIRECTION_FMT = "0[0-9][0-9]|1[0-9][0-9]|2[0-9][0-9]|3[0-5][0-9]|360"
 
 
-class Station(str):
+@dataclass_json
+@dataclass
+class Station:
     """
-    Station name
+    Station class
     """
+
+    name: str
 
     @classmethod
     def from_text(cls, token: str):
@@ -47,7 +52,7 @@ class Station(str):
         if not found:
             return None
 
-        return found[0]
+        return cls(name=found[0])
 
 
 @dataclass_json
@@ -57,9 +62,9 @@ class Timestamp:
     Time information
     """
 
-    day: int
-    hour: int
-    minute: int
+    day: Number
+    hour: Number
+    minute: Number
 
     @classmethod
     def from_text(cls, token: str):
@@ -69,9 +74,7 @@ class Timestamp:
         :param token: token
         :return: time instance or None if not successful
         """
-        found = re.search(
-            "^" + TIME_FORMAT + "Z$", token
-        )
+        found = re.search("^" + TIME_FORMAT + "Z$", token)
 
         if not found:
             return None
@@ -81,35 +84,6 @@ class Timestamp:
         minute = int(found[3])
 
         return cls(day=day, hour=hour, minute=minute)
-
-
-@dataclass_json
-@dataclass
-class Context:
-    """
-    Context class
-    """
-
-    station: Station
-    time: Timestamp
-
-    @classmethod
-    def from_text(cls, token: str):
-        """
-        Attempts to parse the context information from a token
-
-        :param token: token
-        :return: context instance or None if not successful
-        """
-        found = re.search("^([A-Z]{4})\\s(" + TIME_FORMAT + "Z)$", token)
-
-        if not found:
-            return None
-
-        station = Station.from_text(found[1])
-        time = Timestamp.from_text(found[2])
-
-        return cls(station=station, time=time)
 
 
 @dataclass_json
@@ -132,7 +106,12 @@ class Wind:
         :param token: token
         :return: wind conditions instance or None if not successful
         """
-        found = re.search("^(" + DIRECTION_FMT + "|VRB|///)P?([0-9]{2,3}|//)(GP?([0-9]{2,3}))?(KT|MPS|KPH)$", token)
+        found = re.search(
+            "^("
+            + DIRECTION_FMT
+            + "|VRB|///)P?([0-9]{2,3}|//)(GP?([0-9]{2,3}))?(KT|MPS|KPH)$",
+            token,
+        )
 
         if not found:
             return None
@@ -285,15 +264,15 @@ class Weather:
         :return: weather conditions instance or None if not successful
         """
         expression = (
-                "^([-+]|VC)?("
-                + WEATHER_MEMBERS
-                + ")?("
-                + WEATHER_MEMBERS
-                + ")?("
-                + WEATHER_MEMBERS
-                + ")?("
-                + WEATHER_MEMBERS
-                + ")$"
+            "^([-+]|VC)?("
+            + WEATHER_MEMBERS
+            + ")?("
+            + WEATHER_MEMBERS
+            + ")?("
+            + WEATHER_MEMBERS
+            + ")?("
+            + WEATHER_MEMBERS
+            + ")$"
         )
         found = re.search(expression, token)
 
