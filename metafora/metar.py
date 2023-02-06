@@ -169,11 +169,11 @@ class Pressure(int):
             else:
                 pressure = int(found[2])
 
-            pressure = convert_pressure(pressure, unit)
+            pressure = int(convert_pressure(pressure, unit))
         else:
             pressure = None
 
-        return int(pressure)
+        return pressure
 
 
 @dataclass_json
