@@ -20,7 +20,7 @@ Parse raw METAR and TAF
 
 .. code:: python
 
-    from metarfora import Metar, Taf, propagate_forecasts
+    from metarfora import Metar, Taf, unify_forecasts
 
     raw_metar = "EHAM 051825Z 02007KT 340V050 9999 FEW017 06/03 Q1042 NOSIG"
     raw_taf = "TAF EHAM 051721Z 0518/0624 36007KT CAVOK " \
