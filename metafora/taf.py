@@ -26,7 +26,7 @@ from metafora.enums import ChangeEu
 
 HOUR_FORMAT = "(0[0-9]|1[0-9]|2[0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-4])"
 CHANGE_SEARCH = (
-    r"^(PROB[0-9]{2}\sTEMPO)|(TEMPO)|(INTER)|(BECMG)|(FM"
+    r"^(PROB[0-9]{2}\sTEMPO)|(TEMPO)|(PROB[0-9]{2})|(INTER)|(BECMG)|(FM"
     + HOUR_FORMAT
     + ")|(AT"
     + HOUR_FORMAT
@@ -35,7 +35,7 @@ CHANGE_SEARCH = (
     + ")"
 )
 CHANGE_SUB = (
-    r"(PROB[0-9]{2}\sTEMPO|TEMPO|INTER|BECMG|FM"
+    r"(PROB[0-9]{2}\sTEMPO|TEMPO|PROB[0-9]{2}|INTER|BECMG|FM"
     + HOUR_FORMAT
     + "|AT"
     + HOUR_FORMAT
@@ -200,8 +200,12 @@ class Taf:
     """
 
     station: Station
-    time: Timestamp
-    forecasts: List[Forecast]
+    time: Optional[Timestamp] = field(
+        default=None, metadata=config(exclude=lambda x: x is None)
+    )
+    forecasts: Optional[List[Forecast]] = field(
+        default_factory=list, metadata=config(exclude=lambda x: len(x) == 0)
+    )
 
     @classmethod
     def from_text(cls, token: str):
@@ -213,7 +217,7 @@ class Taf:
         """
         # check if it follows a TAF format
         found = re.search(
-            "^(PROV\\s)?TAF\\s(AMD\\s|COR\\s)?([A-Z]{4})\\s(" + TIME_FORMAT + "Z)",
+            "^(PROV\\s)?TAF\\s(AMD\\s|COR\\s)?([A-Z]{4})\\s(" + TIME_FORMAT + "Z)?",
             sanitise_string(token),
         )
 
@@ -222,7 +226,12 @@ class Taf:
 
         # extract context
         station = Station.from_text(found[3])
-        time = Timestamp.from_text(found[4])
+
+        # extract time
+        if found[4]:
+            time = Timestamp.from_text(found[4])
+        else:
+            time = None
 
         # process peridos
         lines = re.sub(CHANGE_SUB, "\n\\g<1>", token.replace(found[0], "")).splitlines()

@@ -184,7 +184,9 @@ class Metar(ParserMixIn):
     """
 
     station: Station
-    time: Timestamp
+    time: Optional[Timestamp] = field(
+        default=None, metadata=config(exclude=lambda x: x is None)
+    )
     wind: Optional[Wind] = field(
         default=None, metadata=config(exclude=lambda x: x is None)
     )
