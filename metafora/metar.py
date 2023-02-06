@@ -185,9 +185,12 @@ class Metar(ParserMixIn):
 
     station: Station
     time: Timestamp
-    wind: Wind
-    visibility: Visibility
-
+    wind: Optional[Wind] = field(
+        default=None, metadata=config(exclude=lambda x: x is None)
+    )
+    visibility: Optional[Visibility] = field(
+        default=None, metadata=config(exclude=lambda x: x is None)
+    )
     runway_info: Optional[List[RunwayVisualRange]] = field(
         default_factory=list, metadata=config(exclude=lambda x: len(x) == 0)
     )
