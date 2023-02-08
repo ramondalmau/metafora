@@ -257,15 +257,15 @@ class Weather:
         :return: weather conditions instance or None if not successful
         """
         expression = (
-            "^([-+]|VC)?("
-            + WEATHER_MEMBERS
-            + ")?("
-            + WEATHER_MEMBERS
-            + ")?("
-            + WEATHER_MEMBERS
-            + ")?("
-            + WEATHER_MEMBERS
-            + ")$"
+                "^([-+]|VC)?("
+                + WEATHER_MEMBERS
+                + ")?("
+                + WEATHER_MEMBERS
+                + ")?("
+                + WEATHER_MEMBERS
+                + ")?("
+                + WEATHER_MEMBERS
+                + ")$"
         )
         found = re.search(expression, token)
 
@@ -360,7 +360,7 @@ class Clouds:
         return cls(amount=amount, height=height, cloud=cloud)
 
 
-def clouds_ceiling(clouds: Union[List[Clouds], None]) -> Union[Number, None]:
+def clouds_height(clouds: Union[List[Clouds], None]) -> Union[Number, None]:
     """
     Computes the ceiling based on cloud layers
     A cloud ceiling is the height of the first cloud layer that constitutes at least a broken (BKN) layer
@@ -386,7 +386,7 @@ def clouds_ceiling(clouds: Union[List[Clouds], None]) -> Union[Number, None]:
     return ceiling
 
 
-def clouds_most_dangerous(clouds: Union[List[Clouds], None]) -> Union[str, None]:
+def clouds_cloud(clouds: Union[List[Clouds], None]) -> Union[str, None]:
     """
     Computes the most dangerous cloud based on cloud layers
 
@@ -432,3 +432,17 @@ def clouds_amount(clouds: Union[List[Clouds], None]) -> Union[str, None]:
         cover = None
 
     return cover
+
+
+def simplify_clouds(clouds: List[Clouds]) -> Clouds:
+    """
+    Simplifies list of clouds
+
+    :param clouds: layers of clouds
+    :return: simplified clouds
+    """
+    return Clouds(
+        height=clouds_height(clouds),
+        cloud=clouds_cloud(clouds),
+        amount=clouds_amount(clouds),
+    )

@@ -3,10 +3,9 @@
 """
 metafora - some helping functions for ML
 """
-from metafora.common import clouds_ceiling, clouds_amount, clouds_most_dangerous
 from metafora.taf import Forecast
 from metafora.metar import Metar
-from metafora.common import Clouds
+from metafora.common import simplify_clouds
 from typing import Union, Dict, Optional
 
 
@@ -20,14 +19,10 @@ def ml_features(report: Union[Metar, Forecast], max_weather: Optional[int] = 2) 
     """
     features = report.to_dict()
 
-    # summarise clouds into three features
-    features["clouds"] = Clouds(
-        height=clouds_ceiling(report.clouds),
-        cloud=clouds_most_dangerous(report.clouds),
-        amount=clouds_amount(report.clouds),
-    ).to_dict()
+    # simplify clouds
+    features["clouds"] = simplify_clouds(report.clouds).to_dict()
 
-    # summarise weather
+    # simplify weather
     weather = features.pop("weather", [])
 
     for i, w in enumerate(weather[:max_weather]):
