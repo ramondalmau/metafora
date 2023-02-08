@@ -6,7 +6,7 @@ metafora - common dataclasses
 import re
 from dataclasses import field, dataclass
 from dataclasses_json import dataclass_json, config
-from typing import Optional, List
+from typing import Optional, List, Union
 
 from metafora.utils import (
     convert_distance,
@@ -360,21 +360,27 @@ class Clouds:
 
         return cls(amount=amount, height=height, cloud=cloud)
 
-
-def clouds_ceiling(clouds: List[Clouds]) -> Number:
+    
+def clouds_ceiling(clouds: Union[List[Clouds], None]) -> Number:
     """
     Computes the ceiling based on cloud layers
+    A cloud ceiling is the height of the first cloud layer that constitutes at least a broken (BKN) layer
 
     :param clouds: layers of clouds
     :return: the ceiling in meters
     """
-    ceiling = 10000
+    ceiling = 3048
+    
+    if clouds is None:
+        return ceiling
 
     for c in clouds:
         if c.amount in ["BKN", "OVC", "VV"]:
             if c.height is not None:
                 ceiling = min(ceiling, c.height)
             else:
+                # ceiling could not be determined (///)
+                # but there is a lauer of clouds that constitutes at least a broken (BKN) layer
                 ceiling = None
                 break
 
