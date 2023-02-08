@@ -16,12 +16,11 @@ from metafora.utils import (
 )
 from metafora.enums import *
 
-
 WEATHER_MEMBERS = "|".join(
-    WeatherDescriptor.members()
-    .union(WeatherPrecipitation.members())
-    .union(WeatherObscuration.members())
-    .union(OtherWeather.members())
+    WeatherDescriptor.set()
+    .union(WeatherPrecipitation.set())
+    .union(WeatherObscuration.set())
+    .union(OtherWeather.set())
 )
 
 TIME_FORMAT = "(0[0-9]|1[0-9]|2[0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-4])([0-5][0-9])"
@@ -285,13 +284,13 @@ class Weather:
 
         # for all codes after intensity ...
         for code in found.groups()[1:]:
-            if code in WeatherDescriptor.members() and descriptor is None:
+            if code in WeatherDescriptor.set() and descriptor is None:
                 descriptor = code
-            elif code in WeatherPrecipitation.members() and precipitation is None:
+            elif code in WeatherPrecipitation.set() and precipitation is None:
                 precipitation = code
-            elif code in WeatherObscuration.members() and obscuration is None:
+            elif code in WeatherObscuration.set() and obscuration is None:
                 obscuration = code
-            elif code in OtherWeather.members() and other is None:
+            elif code in OtherWeather.set() and other is None:
                 other = code
 
         return cls(
@@ -351,17 +350,17 @@ class Clouds:
                 # unknown height
                 height = None
 
-            if found[4] in CloudCover.members():
+            if found[4] in CloudCover.set():
                 amount = found[4]
 
         # get cloud type
-        if found[6] in CloudType.members():
+        if found[6] in CloudType.set():
             cloud = found[6]
 
         return cls(amount=amount, height=height, cloud=cloud)
 
-    
-def clouds_ceiling(clouds: Union[List[Clouds], None]) -> Number:
+
+def clouds_ceiling(clouds: Union[List[Clouds], None]) -> Union[Number, None]:
     """
     Computes the ceiling based on cloud layers
     A cloud ceiling is the height of the first cloud layer that constitutes at least a broken (BKN) layer
@@ -370,7 +369,7 @@ def clouds_ceiling(clouds: Union[List[Clouds], None]) -> Number:
     :return: the ceiling in meters
     """
     ceiling = 3048
-    
+
     if clouds is None:
         return ceiling
 
@@ -385,3 +384,51 @@ def clouds_ceiling(clouds: Union[List[Clouds], None]) -> Number:
                 break
 
     return ceiling
+
+
+def clouds_most_dangerous(clouds: Union[List[Clouds], None]) -> Union[str, None]:
+    """
+    Computes the most dangerous cloud based on cloud layers
+
+    :param clouds: layers of clouds
+    :return: the most dangerous cloud (if any)
+    """
+    if clouds is None:
+        return None
+
+    members = CloudType.list()
+    idx = None
+    for c in clouds:
+        if c.cloud is not None:
+            idx = max(members.index(c.cloud), 0 if idx is None else idx)
+
+    if idx is not None:
+        return members[idx]
+    else:
+        return None
+
+
+def clouds_amount(clouds: Union[List[Clouds], None]) -> Union[str, None]:
+    """
+    Computes the largest layer cover in oktas
+
+    :param clouds: layers of clouds
+    :return: the most dangerous cloud (if any)
+    """
+    if clouds is None:
+        return None
+
+    members = CloudCover.list()
+    idx = None
+    for c in clouds:
+        if c.amount is not None:
+            idx = max(members.index(c.amount), 0 if idx is None else idx)
+
+    if idx is not None:
+        cover = members[idx]
+        if cover in ["NCD", "NSC", "CLR", "SKC", "NOBS"]:
+            cover = None
+    else:
+        cover = None
+
+    return cover

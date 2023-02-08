@@ -10,14 +10,24 @@ class CustomEnum(str, Enum):
     """
     Custom enum with additional functionalities
     """
+
     @classmethod
-    def members(cls):
+    def set(cls):
         """
         Returns the members of this enumerator
 
         :return: members
         """
         return set(k for k in cls.__members__.keys())
+
+    @classmethod
+    def list(cls):
+        """
+        Returns the members of this list
+
+        :return: members
+        """
+        return list(k for k in cls.__members__.keys())
 
 
 class CloudCover(CustomEnum):
@@ -40,8 +50,8 @@ class CloudType(CustomEnum):
     """
     Enumerator of cloud types
     """
-    CB = "cumulonimbus"
     TCU = "towering cumulus"
+    CB = "cumulonimbus"
 
 
 class WeatherDescriptor(CustomEnum):

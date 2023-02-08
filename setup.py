@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 from setuptools import setup
+from metafora import __version__
 
 setup(name='metafora',
-      version='0.1.6',
+      version=__version__,
       description='METAR and TAF parser with dataclasses and regular expressions',
       author='Ramon Dalmau-Codina',
       author_email='ramon.dalmau.codina@gmail.com',

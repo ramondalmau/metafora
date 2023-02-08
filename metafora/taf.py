@@ -136,7 +136,7 @@ class Indicator(str):
         :param token: token
         :return: change indicator instance or None if not successful
         """
-        found = re.search("^(" + "|".join(ChangeEu.members()) + ")$", token)
+        found = re.search("^(" + "|".join(ChangeEu.set()) + ")$", token)
 
         if not found:
             return None
