@@ -427,7 +427,7 @@ def clouds_amount(clouds: Union[List[Clouds], None]) -> Union[str, None]:
             idx = max(members.index(c.amount), 0 if idx is None else idx)
 
     if idx is not None:
-        return idx * 2
+        return (idx + 1) * 2
     else:
         return None
 
