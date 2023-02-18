@@ -7,7 +7,26 @@ from typing import Union
 
 Number = Union[float, int]
 
+COMPASS = [
+            "N",
+            "NNE",
+            "NE",
+            "ENE",
+            "E",
+            "ESE",
+            "SE",
+            "SSE",
+            "S",
+            "SSW",
+            "SW",
+            "WSW",
+            "W",
+            "WNW",
+            "NW",
+            "NNW",
+        ]
 
+        
 def convert_speed(speed: Number, unit: str) -> float:
     """
     Convets speed to meters per second
@@ -68,24 +87,7 @@ def convert_direction(direction: Number) -> str:
     :return: compass
     """
     if 0 <= direction <= 360:
-        return [
-            "N",
-            "NNE",
-            "NE",
-            "ENE",
-            "E",
-            "ESE",
-            "SE",
-            "SSE",
-            "S",
-            "SSW",
-            "SW",
-            "WSW",
-            "W",
-            "WNW",
-            "NW",
-            "NNW",
-        ][round(direction / 22.5) % 16]
+        return COMPASS[round(direction / 22.5) % 16]
     else:
         raise ValueError(
             "Wind direction must be in degrees. Thus, its value must be higher than 0 and lower than 360, "

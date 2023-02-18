@@ -265,7 +265,7 @@ class Weather:
                 + WEATHER_MEMBERS
                 + ")?("
                 + WEATHER_MEMBERS
-                + ")$"
+                + ")?(NSW)?$"
         )
         found = re.search(expression, token)
 
@@ -310,7 +310,7 @@ class Clouds:
     Height expressed in meters
     """
 
-    amount: Optional[str] = field(
+    amount: Optional[Union[str, int]] = field(
         default=None, metadata=config(exclude=lambda x: x is None)
     )
     height: Optional[Number] = field(
@@ -341,7 +341,7 @@ class Clouds:
         cloud = None
 
         # get cloud height and amount
-        if found[2]:
+        if found[2] and found[2] in CloudCover.set():
             amount = found[2]
         elif found[5]:
             if found[5] != "///":
@@ -379,7 +379,7 @@ def clouds_height(clouds: Union[List[Clouds], None]) -> Union[Number, None]:
                 ceiling = min(ceiling, c.height)
             else:
                 # ceiling could not be determined (///)
-                # but there is a lauer of clouds that constitutes at least a broken (BKN) layer
+                # but there is a layer of clouds that constitutes at least a broken (BKN) layer
                 ceiling = None
                 break
 
@@ -411,6 +411,7 @@ def clouds_cloud(clouds: Union[List[Clouds], None]) -> Union[str, None]:
 def clouds_amount(clouds: Union[List[Clouds], None]) -> Union[str, None]:
     """
     Computes the largest layer cover in oktas
+    , VV is considered 10 oktas (the maximum)
 
     :param clouds: layers of clouds
     :return: the most dangerous cloud (if any)
@@ -420,18 +421,15 @@ def clouds_amount(clouds: Union[List[Clouds], None]) -> Union[str, None]:
 
     members = CloudCover.list()
     idx = None
+    
     for c in clouds:
         if c.amount is not None:
             idx = max(members.index(c.amount), 0 if idx is None else idx)
 
     if idx is not None:
-        cover = members[idx]
-        if cover in ["NCD", "NSC", "CLR", "SKC", "NOBS"]:
-            cover = None
+        return idx * 2
     else:
-        cover = None
-
-    return cover
+        return None
 
 
 def simplify_clouds(clouds: List[Clouds]) -> Clouds:

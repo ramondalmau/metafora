@@ -34,11 +34,6 @@ class CloudCover(CustomEnum):
     """
     Enumerator of cloud covers
     """
-    NSC = "no significant clouds are observed"
-    NCD = "nil cloud detected"
-    SKC = "no significant changes expected"
-    CLR = "clear skies"
-    NOBS = "no observation"
     FEW = "a few"
     SCT = "scattered"
     BKN = "broken sky"
@@ -58,7 +53,6 @@ class WeatherDescriptor(CustomEnum):
     """
     Enumerator of weather descriptors
     """
-    NSW = "no significant weather are observed"
     MI = "shallow"
     PR = "partial"
     BC = "patches of"

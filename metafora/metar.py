@@ -6,8 +6,7 @@ metafora - metar
 import re
 from dataclasses import field, dataclass
 from dataclasses_json import dataclass_json, config
-from typing import List, Optional
-
+from typing import List, Optional, Tuple
 import warnings
 
 warnings.filterwarnings(action="ignore", category=UserWarning)
@@ -22,7 +21,7 @@ from metafora.common import (
     Number,
 )
 from metafora.parser import ParserMixIn
-from metafora.utils import convert_distance, convert_pressure
+from metafora.utils import convert_distance, convert_pressure, convert_direction
 
 
 @dataclass_json
@@ -82,9 +81,6 @@ class RunwayVisualRange:
         if found[7]:
             unit = found[7]
 
-        if found[8]:
-            tendency = found[8]
-
         if found[6]:
             if found[4]:
                 distance_min = convert_distance(int(found[4]), unit)
@@ -94,6 +90,12 @@ class RunwayVisualRange:
 
             if found[5]:
                 distance_prefix = found[5]
+        else:
+            # if distance is not give, return none
+            return None
+
+        if found[8]:
+            tendency = found[8]
 
         return cls(
             runway=runway,
@@ -208,3 +210,54 @@ class Metar(ParserMixIn):
     pressure: Optional[Pressure] = field(
         default=None, metadata=config(exclude=lambda x: x is None)
     )
+
+
+def runway_info_distance_min(runway_info: List[RunwayVisualRange]) -> RunwayVisualRange:
+    """
+    Gets compass of the runway with minimum distance
+
+    :param clouds: list of RVR
+    :return: compass and distance
+    """    
+    distance = None
+    compass = None
+
+    if runway_info is not None:
+        for r in runway_info:
+            if r.distance is not None:
+                if distance is None or r.distance < distance:
+                    distance = r.distance
+                    compass = convert_direction(int(r.runway[:2]))
+            elif r.distance_min is not None:
+                if distance is None or r.distance_min < distance:
+                    distance = r.distance_min
+                    compass = convert_direction(int(r.runway[:2]))
+
+    return RunwayVisualRange(runway=compass, distance=distance)
+
+
+def runway_info_distance_max(runway_info: List[RunwayVisualRange]) -> RunwayVisualRange:
+    """
+    Gets compass of the runway with maximum distance
+
+    :param clouds: list of RVR
+    :return: compass and distance
+    """    
+    distance = None
+    compass = None
+
+    if runway_info is not None:
+        for r in runway_info:
+            if r.distance is not None:
+                if distance is None or r.distance > distance:
+                    distance = r.distance
+                    compass = convert_direction(int(r.runway[:2]))
+            elif r.distance_max is not None:
+                if distance is None or r.distance_max > distance:
+                    distance = r.distance_max
+                    compass = convert_direction(int(r.runway[:2]))
+                
+    return RunwayVisualRange(runway=compass, distance=distance)
+
+
+
