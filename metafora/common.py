@@ -16,12 +16,8 @@ from metafora.utils import (
 )
 from metafora.enums import *
 
-WEATHER_MEMBERS = "|".join(
-    WeatherDescriptor.set()
-    .union(WeatherPrecipitation.set())
-    .union(WeatherObscuration.set())
-    .union(OtherWeather.set())
-)
+WEATHER_DESCRIPTOR = "|".join(WeatherDescriptor.set())
+WEATHER_PHENOMENA = "|".join(WeatherPrecipitation.set().union(WeatherObscuration.set()).union(OtherWeather.set()))
 
 TIME_FORMAT = "(0[0-9]|1[0-9]|2[0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-4])([0-5][0-9])"
 DIRECTION_FMT = "0[0-9][0-9]|1[0-9][0-9]|2[0-9][0-9]|3[0-5][0-9]|360"
@@ -238,13 +234,7 @@ class Weather:
     descriptor: Optional[str] = field(
         default=None, metadata=config(exclude=lambda x: x is None)
     )
-    precipitation: Optional[str] = field(
-        default=None, metadata=config(exclude=lambda x: x is None)
-    )
-    obscuration: Optional[str] = field(
-        default=None, metadata=config(exclude=lambda x: x is None)
-    )
-    other: Optional[str] = field(
+    phenomena: Optional[str] = field(
         default=None, metadata=config(exclude=lambda x: x is None)
     )
 
@@ -258,13 +248,13 @@ class Weather:
         """
         expression = (
                 "^([-+]|VC)?("
-                + WEATHER_MEMBERS
+                + WEATHER_DESCRIPTOR
                 + ")?("
-                + WEATHER_MEMBERS
+                + WEATHER_PHENOMENA
                 + ")?("
-                + WEATHER_MEMBERS
+                + WEATHER_PHENOMENA
                 + ")?("
-                + WEATHER_MEMBERS
+                + WEATHER_PHENOMENA
                 + ")?(NSW)?$"
         )
         found = re.search(expression, token)
@@ -274,31 +264,27 @@ class Weather:
 
         intensity = None
         descriptor = None
-        precipitation = None
-        obscuration = None
-        other = None
+        phenomena = None
 
         # intensity
         if found[1]:
             intensity = found[1]
 
+        # descriptor
+        if found[2]:
+            descriptor = found[2]
+
         # for all codes after intensity ...
-        for code in found.groups()[1:]:
-            if code in WeatherDescriptor.set() and descriptor is None:
-                descriptor = code
-            elif code in WeatherPrecipitation.set() and precipitation is None:
-                precipitation = code
-            elif code in WeatherObscuration.set() and obscuration is None:
-                obscuration = code
-            elif code in OtherWeather.set() and other is None:
-                other = code
+        if found[3]:
+            phenomena = ""
+            for code in found.groups()[2:]:
+                if code:
+                    phenomena += code
 
         return cls(
             intensity=intensity,
             descriptor=descriptor,
-            precipitation=precipitation,
-            obscuration=obscuration,
-            other=other,
+            phenomena=phenomena,
         )
 
 

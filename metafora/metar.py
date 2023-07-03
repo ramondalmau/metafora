@@ -6,7 +6,7 @@ metafora - metar
 import re
 from dataclasses import field, dataclass
 from dataclasses_json import dataclass_json, config
-from typing import List, Optional, Tuple
+from typing import List, Optional
 import warnings
 
 warnings.filterwarnings(action="ignore", category=UserWarning)
@@ -258,6 +258,3 @@ def runway_info_distance_max(runway_info: List[RunwayVisualRange]) -> RunwayVisu
                     compass = convert_direction(int(r.runway[:2]))
                 
     return RunwayVisualRange(runway=compass, distance=distance)
-
-
-

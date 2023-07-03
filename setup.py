@@ -2,7 +2,7 @@
 from setuptools import setup
 
 setup(name='metafora',
-      version="1.0.2",
+      version="1.1.0",
       description='METAR and TAF parser with dataclasses and regular expressions',
       author='Ramon Dalmau-Codina',
       author_email='ramon.dalmau.codina@gmail.com',
