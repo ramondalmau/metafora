@@ -15,7 +15,8 @@ def sanitise_string(raw: str) -> str:
     :param raw:
     :return:
     """
-    return re.sub("[\t\\s]+", " ", raw).strip().rstrip('=')
+    sane = " ".join(raw.split())
+    return sane.strip().rstrip('=')
 
 
 @dataclass
