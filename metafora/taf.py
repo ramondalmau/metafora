@@ -215,6 +215,9 @@ class Taf:
         :param token: token
         :return: TAF instance or False if not successful
         """
+        # sanitise 
+        token = sanitise_string(token) 
+        
         # check if it follows a TAF format
         found = re.search(
             "^(PROV\\s)?TAF\\s(AMD\\s|COR\\s)?([A-Z]{4})\\s(" + TIME_FORMAT + "Z)?",
