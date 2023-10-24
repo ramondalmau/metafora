@@ -20,6 +20,7 @@ from metafora.common import (
     Weather,
     Visibility,
     TIME_FORMAT,
+    Number
 )
 from metafora.parser import ParserMixIn, sanitise_string
 from metafora.enums import ChangeEu
@@ -146,6 +147,65 @@ class Indicator(str):
 
 @dataclass_json
 @dataclass
+class MaximumTemperature:
+    """
+    Maximum Temperature
+    Maximum Temperature is expressed in degrees celcius
+    """
+
+    value: Number
+    time: Timestamp
+
+    @classmethod
+    def from_text(cls, token: str):
+        """
+        Attempts to parse the temperature from a token
+        :param token: token
+        :return: visibility conditions instance or None if not successful
+        """
+        found = re.search("^TX(M?[0-9]{2})/(" + HOUR_FORMAT + ")Z$", token)
+
+        if not found:
+            return None
+
+        value = int(found[1].replace("M", "-"))
+        time = Timestamp.from_text(str(found[2]) + "00Z")
+
+        return cls(value=value, time=time)
+
+
+# NOT USED
+@dataclass_json
+@dataclass
+class MinimumTemperature:
+    """
+    Minimum Temperature
+    Minimum Temperature is expressed in degrees celcius
+    """
+
+    value: Number
+    time: Timestamp
+
+    @classmethod
+    def from_text(cls, token: str):
+        """
+        Attempts to parse the temperature from a token
+        :param token: token
+        :return: visibility conditions instance or None if not successful
+        """
+        found = re.search("^TN(M?[0-9]{2})/(" + HOUR_FORMAT + ")Z$", token)
+
+        if not found:
+            return None
+
+        value = int(found[1].replace("M", "-"))
+        time = Timestamp.from_text(str(found[2]) + "00Z")
+
+        return cls(value=value, time=time)
+    
+
+@dataclass_json
+@dataclass
 class Forecast(ParserMixIn):
     """
     Weather forecast dataclass
@@ -172,7 +232,12 @@ class Forecast(ParserMixIn):
     clouds: Optional[List[Clouds]] = field(
         default_factory=list, metadata=config(exclude=lambda x: len(x) == 0)
     )
-
+    maxtemperature: Optional[MaximumTemperature] = field(
+        default=None, metadata=config(exclude=lambda x: x is None)
+    )
+    mintemperature: Optional[MinimumTemperature] = field(
+    default=None, metadata=config(exclude=lambda x: x is None)
+    )
     def __post_init__(self):
         if self.validity is None:
             # just for compatibility ... In Python 3.10 we could use kw_only of dataclasses
