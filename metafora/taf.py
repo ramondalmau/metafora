@@ -236,7 +236,7 @@ class Forecast(ParserMixIn):
         default=None, metadata=config(exclude=lambda x: x is None)
     )
     mintemperature: Optional[MinimumTemperature] = field(
-    default=None, metadata=config(exclude=lambda x: x is None)
+        default=None, metadata=config(exclude=lambda x: x is None)
     )
     def __post_init__(self):
         if self.validity is None:
@@ -311,9 +311,9 @@ class Taf:
         return cls(station=station, time=time, forecasts=forecasts)
 
 
-def unify_forecasts(forecasts: List[Forecast]) -> List[Forecast]:
+def propagate_forecasts(forecasts: List[Forecast]) -> List[Forecast]:
     """
-    Unify times in a list of forecasts
+    Propgate forecasts
 
     :param forecasts:
     :return:
