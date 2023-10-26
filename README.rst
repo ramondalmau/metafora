@@ -1,63 +1,103 @@
-**Metafora**
-============================
+=============================
+🌦️ Metafora - Your Weather Wizard! ☀️
+=============================
 
-``metafora`` is a simple tool to parse METARs and TAFs. It is build on
-the ``dataclasses``, which provides a simple way to create data classes
-without the need to write methods, as well as on ``dataclasses-json``
-for encoding and decoding dataclasses to and from JSON.
+Welcome to **Metafora**, the tool for parsing meteorological aerodrome reports (METARs) and terminal area forecasts (TAFs) with ease. 🚀
+
+What Is Metafora All About?
+---------------------------
+
+**Metafora** is your weather data partner. It's built on the robust foundation of `dataclasses`, simplifying data class creation without the need for extensive methods. It also harnesses the power of `dataclasses-json` for efficient encoding and decoding of dataclasses to and from JSON.
+
+This tool is meticulously designed to streamline the creation of weather datasets, making it a breeze for developing machine learning that require meteorological data.
 
 Installation
 ------------
 
-::
+Getting started is simple:
+
+.. code-block:: shell
 
    pip install metafora
 
-Example
--------
+Examples
+--------
 
-Parse raw METAR and TAF
+These are just a few examples of the many possibilities **Metafora** offers. Feel free to explore and adapt the tool to your specific needs, whether you're a data enthusiast, meteorologist, or a machine learning practitioner. 
 
-.. code:: python
+Parsing METAR and TAF
+^^^^^^^^^^^^^^^^^^^^^
 
-    from metafora import Metar, Taf, unify_forecasts
+.. code-block:: python
 
-    raw_metar = "EHAM 051825Z 02007KT 340V050 9999 FEW017 06/03 Q1042 NOSIG"
-    raw_taf = "TAF EHAM 051721Z 0518/0624 36007KT CAVOK " \
-              "BECMG 0523/0602 4500 MIFG " \
-              "PROB30 TEMPO 0603/0609 0600 BCFG " \
-              "BECMG 0608/0611 VRB02KT CAVOK " \
-              "BECMG 0619/0622 4500 MIFG " \
-              "PROB30 TEMPO 0622/0624 0600 BCFG"
+   from metafora import Metar, Taf
 
-    taf = Taf.from_text(raw_taf)
-    metar = Metar.from_text(raw_metar)
+   raw_metar = "LEBL 260730Z 19003KT 160V290 9999 RA VV001 FEW045 OVC003 20/15 Q1006 NOSIG"
+   raw_taf = "TAF LEBL 260500Z 2606/2706 26009KT 9999 FEW030 TX25/2613Z TN16/2706Z TEMPO 2607/2611 27014KT BECMG 2611/2613 23015G25KT BECMG 2619/2621 29010KT"
 
-Access their attributes
+   taf = Taf.from_text(raw_taf)
+   metar = Metar.from_text(raw_metar)
 
-.. code:: python
-
-   ...
+   # Access their attributes (e.g., wind speed)
    metar.wind.speed
 
-Convert to nested dictionary
+Converting to a Nested Dictionary
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: python
+.. code-block:: python
 
-   ...
+   # Convert data to a structured nested dictionary
    taf.to_dict()
 
-Unify TAF forecasts
+Converting to JSON
+^^^^^^^^^^^^^^^^^^
 
-.. code:: python
+.. code-block:: python
 
-   ...
-   forecasts = unify_forecasts(taf.forecasts)
+   # Convert datasets to JSON and vice versa
+   dummy_taf_list_before = [taf, taf]
+   taf_json = Taf.schema().dumps(dummy_taf_list_before, many=True)
+   dummy_taf_list_after = Taf.schema().loads(taf_json, many=True)
+   assert dummy_taf_list_after == dummy_taf_list_before
 
-Convert a list of forecasts to JSON and vice-versa
+Propagating TAF Forecasts
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: python
+.. code-block:: python
 
-   ...
-   taf_json = Taf.schema().dumps(taf_list, many=True)
-   taf_list = Taf.schema().loads(taf_json, many=True)
+   # Propagate TAF forecasts efficiently
+   from metafora.taf import propagate_forecasts
+   propagated_forecasts = propagate_forecasts(taf.forecasts)
+
+Data Processing for Machine Learning
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+   # Convert data to pandas dataframes for machine learning applications
+   from metafora.engineering import reports_to_dataframe, process_tafs, process_metars
+   from pprint import pprint
+
+   # process a list of METARs or TAFs
+   processed_metars = process_metars([{"time": "2023-10-26T07:30:00", "report": raw_metar}])
+   processed_tafs = process_tafs(
+       [{"time": "2023-10-26T05:00:00", "report": raw_taf}])
+
+   # convert to pandas dataframe
+   df_metar = reports_to_dataframe(processed_metars)
+   df_taf = reports_to_dataframe(processed_tafs)
+
+   # check the result!
+   pprint(df_metar.to_dict(orient="records"))
+   pprint(df_taf.to_dict(orient="records"))
+
+Contributions Welcome
+----------------------
+
+We welcome contributions from the open-source community to make **Metafora** even better! If you are passionate about meteorological data or have expertise in related fields, we'd love to have you on board.
+
+One specific area where we're looking for contributions is the implementation of `impunity`, a Python library consisting of a single decorator function designed to ensure the consistency of physical quantities. This feature can add tremendous value to our project.
+
+- **Check out `impunity`**: [impunity Repository](https://github.com/achevrot/impunity)
+
+Please feel free to fork the repository, make improvements, and submit pull requests. Your contributions will help us enhance the capabilities of **Metafora** and make it a more powerful tool for everyone. 🚀

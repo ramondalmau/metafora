@@ -296,10 +296,13 @@ class Clouds:
     Height expressed in meters
     """
 
-    amount: Optional[Union[str, int]] = field(
+    amount: Optional[Union[str, Number]] = field(
         default=None, metadata=config(exclude=lambda x: x is None)
     )
     height: Optional[Number] = field(
+        default=None, metadata=config(exclude=lambda x: x is None)
+    )
+    vertical_visibility: Optional[Number] = field(
         default=None, metadata=config(exclude=lambda x: x is None)
     )
     cloud: Optional[str] = field(
@@ -324,6 +327,7 @@ class Clouds:
 
         amount = None
         height = None
+        vertical_visibility = None
         cloud = None
 
         # get cloud height and amount
@@ -339,11 +343,16 @@ class Clouds:
             if found[4] in CloudCover.set():
                 amount = found[4]
 
+                # VV is an special case
+                if amount == "VV":
+                    vertical_visibility = height
+                    height = None 
+
         # get cloud type
         if found[6] in CloudType.set():
             cloud = found[6]
 
-        return cls(amount=amount, height=height, cloud=cloud)
+        return cls(amount=amount, height=height, vertical_visibility=vertical_visibility, cloud=cloud)
 
 
 def clouds_height(clouds: Union[List[Clouds], None]) -> Union[Number, None]:
@@ -360,21 +369,16 @@ def clouds_height(clouds: Union[List[Clouds], None]) -> Union[Number, None]:
         return ceiling
 
     for c in clouds:
-        if c.amount in ["BKN", "OVC", "VV"]:
+        if c.amount in ["BKN", "OVC"]:
             if c.height is not None:
                 ceiling = min(ceiling, c.height)
-            else:
-                # ceiling could not be determined (///)
-                # but there is a layer of clouds that constitutes at least a broken (BKN) layer
-                ceiling = None
-                break
 
     return ceiling
 
 
 def clouds_cloud(clouds: Union[List[Clouds], None]) -> Union[str, None]:
     """
-    Computes the most dangerous cloud based on cloud layers
+    Computes the most dangerous cloud (TCU or CB) based on cloud layers
 
     :param clouds: layers of clouds
     :return: the most dangerous cloud (if any)
@@ -394,13 +398,12 @@ def clouds_cloud(clouds: Union[List[Clouds], None]) -> Union[str, None]:
         return None
 
 
-def clouds_amount(clouds: Union[List[Clouds], None]) -> Union[str, None]:
+def clouds_amount(clouds: Union[List[Clouds], None]) -> Union[Number, None]:
     """
     Computes the largest layer cover in oktas
-    , VV is considered 10 oktas (the maximum)
 
     :param clouds: layers of clouds
-    :return: the most dangerous cloud (if any)
+    :return: the most restrictive (maximum) amount of clouds in oktas
     """
     if clouds is None:
         return None
@@ -409,7 +412,7 @@ def clouds_amount(clouds: Union[List[Clouds], None]) -> Union[str, None]:
     idx = None
     
     for c in clouds:
-        if c.amount is not None:
+        if c.amount is not None and c.amount != "VV":
             idx = max(members.index(c.amount), 0 if idx is None else idx)
 
     if idx is not None:
@@ -418,15 +421,36 @@ def clouds_amount(clouds: Union[List[Clouds], None]) -> Union[str, None]:
         return None
 
 
+def clouds_vertical_visibility(clouds: Union[List[Clouds], None]) -> Union[Number, None]:
+    """
+    Computes the vertical_visibility from layers of cloudss
+
+    :param clouds: layers of clouds
+    :return: the most restrictive (minimum) vertical visibilitys
+    """
+    if clouds is None:
+        return None
+
+    vertical_visibility = None
+
+    for c in clouds:
+        if c.amount == "VV" and c.vertical_visibility is not None:
+            vertical_visibility = min(c.vertical_visibility, float(
+                "inf") if vertical_visibility is None else vertical_visibility)
+
+    return vertical_visibility
+    
+
 def simplify_clouds(clouds: List[Clouds]) -> Clouds:
     """
     Simplifies list of clouds
 
     :param clouds: layers of clouds
-    :return: simplified clouds
+    :return: simplified clouds with the most restrictive information
     """
     return Clouds(
         height=clouds_height(clouds),
+        vertical_visibility=clouds_vertical_visibility(clouds),
         cloud=clouds_cloud(clouds),
         amount=clouds_amount(clouds),
     )
