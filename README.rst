@@ -98,6 +98,4 @@ We welcome contributions from the open-source community to make **Metafora** eve
 
 One specific area where we're looking for contributions is the implementation of `impunity`, a Python library consisting of a single decorator function designed to ensure the consistency of physical quantities. This feature can add tremendous value to our project.
 
-- **Check out `impunity`**: [impunity Repository](https://github.com/achevrot/impunity)
-
 Please feel free to fork the repository, make improvements, and submit pull requests. Your contributions will help us enhance the capabilities of **Metafora** and make it a more powerful tool for everyone. 🚀
