@@ -243,7 +243,7 @@ class Forecast(ParserMixIn):
             # just for compatibility ... In Python 3.10 we could use kw_only of dataclasses
             raise ValueError("Validity is mandatory in forecasts")
 
-        if self.indicator is None:
+"""         if self.indicator is None:
             if self.validity.start_time is None and self.validity.end_time is not None:
                 self.indicator = Indicator("TL")
             elif (
@@ -254,7 +254,7 @@ class Forecast(ParserMixIn):
                 self.validity.start_time == self.validity.end_time
                 and self.validity.start_time is not None
             ):
-                self.indicator = Indicator("AT")
+                self.indicator = Indicator("AT") """
 
 
 @dataclass_json
