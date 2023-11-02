@@ -84,8 +84,10 @@ class ParserMixIn:
                             j = i
                         else:
                             kwargs[cf_name] = result
+
                             # move to the next field
-                            j = j + 1
+                            # i = i + 1?
+                            j = i + 1
 
                         # stop
                         break
