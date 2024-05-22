@@ -10,6 +10,11 @@ from metafora.enums import WeatherPrecipitation, WeatherObscuration, OtherWeathe
 from typing import Union, Dict, List, Optional
 from pandas import DataFrame, json_normalize, to_datetime, Timestamp, NaT
 from datetime import datetime, timedelta
+import re
+
+PRECIPITATION_MEMBERS = frozenset(WeatherPrecipitation._member_names_)
+OBSCURATION_MEMBERS = frozenset(WeatherObscuration._member_names_)
+OTHER_MEMBERS = frozenset(OtherWeather._member_names_)
 
 BASIC_COLS = [
     "station",
@@ -21,6 +26,7 @@ BASIC_COLS = [
     "wind_speed",
     "wind_gust",
     "wind_compass",
+    "wind_shear",
 ]
 
 BOOLEAN_COLS = [
@@ -35,7 +41,6 @@ BOOLEAN_COLS = [
     "hail",
     "fog",
     "clouds",
-    "wind_shear",
 ]
 
 METAR_SPECIFIC_COLS = [
@@ -226,47 +231,51 @@ def machine_learning_features(df: DataFrame) -> DataFrame:
 
     for c in df.columns:
         if c.endswith("phenomena"):
-            # precipitation
-            status = (
-                df[c]
-                .str.startswith(tuple(WeatherPrecipitation._member_names_))
-                .fillna(False)
+            # precipitation phenomena
+            phenomena = df[c].apply(
+                lambda x: frozenset() if x is None else frozenset(re.findall("..", x))
             )
-            df["precipitation"] = df["precipitation"] | status
+            precipitation = phenomena.apply(
+                lambda x: x.intersection(PRECIPITATION_MEMBERS)
+            )
 
-            # important precipitation
+            # note that different types of precipitation occurring at the time of observation
+            # are to be reported as one single group
+            # with the dominant type of precipitation reported first
+            df["precipitation"] = df["precipitation"] | precipitation.apply(any)
+
             # snow
-            status = df[c].str.contains(("SN", "SG")).fillna(False)
-            df["snow"] = df["snow"] | status
+            snow = precipitation.apply(
+                lambda x: any(frozenset(["SN", "SG"]).intersection(x))
+            )
+            df["snow"] = df["snow"] | snow
 
             # hail
-            status = df[c].str.contains(("GR", "GS")).fillna(False)
-            df["hail"] = df["hail"] | status
+            hail = precipitation.apply(
+                lambda x: any(frozenset(["GR", "GS"]).intersection(x))
+            )
+            df["hail"] = df["hail"] | hail
 
             # ice
-            status = df[c].str.contains(("IC", "PL")).fillna(False)
-            df["ice"] = df["ice"] | status
-
-            # obscuration
-            status = (
-                df[c]
-                .str.startswith(tuple(WeatherObscuration._member_names_))
-                .fillna(False)
+            ice = precipitation.apply(
+                lambda x: any(frozenset(["IC", "PL"]).intersection(x))
             )
-            df["obscuration"] = df["obscuration"] | status
+            df["ice"] = df["ice"] | ice
 
-            # important obscuration
-            # fog
-            status = df[c].str.contains(("FG")).fillna(False)
-            df["fog"] = df["fog"] | status
+            # obscuration phenomena
+            obscuration = phenomena.apply(lambda x: x.intersection(OBSCURATION_MEMBERS))
+
+            df["obscuration"] = df["obscuration"] | obscuration.apply(any)
+
+            fog = obscuration.apply(lambda x: "FG" in x)
+            df["fog"] = df["fog"] | fog
 
             # other phenomena
-            status = (
-                df[c].str.startswith(tuple(OtherWeather._member_names_)).fillna(False)
-            )
-            df["other"] = df["other"] | status
+            other = phenomena.apply(lambda x: x.intersection(OTHER_MEMBERS))
+            df["other"] = df["other"] | other.apply(any)
 
         elif c.endswith("descriptor"):
+            # only one descriptor per weather level
             # thunderstorms
             status = (df[c] == "TS").fillna(False)
             df["thunderstorms"] = df["thunderstorms"] | status

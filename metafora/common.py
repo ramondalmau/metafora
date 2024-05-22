@@ -223,7 +223,7 @@ class Visibility:
         return cls(distance=distance, cavok=cavok)
 
 
-class WindShear:
+class WindShear(int):
     """
     Wind shear class
     """
