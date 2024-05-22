@@ -8,7 +8,7 @@ from metafora.metar import Metar, runway_info_distance_max, runway_info_distance
 from metafora.common import simplify_clouds
 from metafora.enums import WeatherPrecipitation, WeatherObscuration, OtherWeather
 from typing import Union, Dict, List, Optional
-from pandas import DataFrame, json_normalize, to_datetime, Timestamp, NaT
+from pandas import DataFrame, json_normalize, to_datetime, Timestamp, NaT, isnull
 from datetime import datetime, timedelta
 import re
 
@@ -233,7 +233,7 @@ def machine_learning_features(df: DataFrame) -> DataFrame:
         if c.endswith("phenomena"):
             # precipitation phenomena
             phenomena = df[c].apply(
-                lambda x: frozenset() if x is None else frozenset(re.findall("..", x))
+                lambda x: frozenset() if isnull(x) else frozenset(re.findall("..", x))
             )
             precipitation = phenomena.apply(
                 lambda x: x.intersection(PRECIPITATION_MEMBERS)
