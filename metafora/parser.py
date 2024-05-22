@@ -16,7 +16,7 @@ def sanitise_string(raw: str) -> str:
     :return:
     """
     sane = " ".join(raw.split())
-    return sane.strip().rstrip('=')
+    return sane.strip().rstrip("=")
 
 
 @dataclass

@@ -12,27 +12,45 @@ from pandas import DataFrame, json_normalize, to_datetime, Timestamp, NaT
 from datetime import datetime, timedelta
 
 BASIC_COLS = [
-              "station", 
-              "visibility_cavok", "visibility_distance", 
-              "clouds_height", "clouds_amount", "clouds_vertical_visibility", 
-              "wind_speed", "wind_gust", "wind_compass",
-              ]
+    "station",
+    "visibility_cavok",
+    "visibility_distance",
+    "clouds_height",
+    "clouds_amount",
+    "clouds_vertical_visibility",
+    "wind_speed",
+    "wind_gust",
+    "wind_compass",
+]
 
-BOOLEAN_COLS = ['precipitation', 
-                'obscuration',
-                'other', 
-                'thunderstorms', 
-                'freezing',
-                'snow', 
-                'clouds']
+BOOLEAN_COLS = [
+    "precipitation",
+    "obscuration",
+    "other",
+    "thunderstorms",
+    "freezing",
+    "showers",
+    "snow",
+    "ice",
+    "hail",
+    "fog",
+    "clouds",
+    "wind_shear",
+]
 
-METAR_SPECIFIC_COLS = ["temperature_temperature", 
-                       "temperature_dewpoint", 
-                       "pressure"]
+METAR_SPECIFIC_COLS = [
+    "temperature_temperature",
+    "temperature_dewpoint",
+    "pressure",
+]
 
-TAF_SPECIFIC_COLS = ["indicator", "probability", 
-                     "maxtemperature_value",
-                     "mintemperature_value"]
+TAF_SPECIFIC_COLS = [
+    "indicator",
+    "probability",
+    "maxtemperature_value",
+    "mintemperature_value",
+]
+
 
 def simplify_report(report: Union[Metar, Forecast]) -> Dict:
     """
@@ -48,8 +66,12 @@ def simplify_report(report: Union[Metar, Forecast]) -> Dict:
 
     # simplify runway visual range
     if features.pop("runway_info", None):
-        features["runway_info_min"] = runway_info_distance_min(report.runway_info).to_dict()
-        features["runway_info_max"] = runway_info_distance_max(report.runway_info).to_dict()
+        features["runway_info_min"] = runway_info_distance_min(
+            report.runway_info
+        ).to_dict()
+        features["runway_info_max"] = runway_info_distance_max(
+            report.runway_info
+        ).to_dict()
 
     # flatten weather
     for i, w in enumerate(features.pop("weather", [])):
@@ -117,7 +139,7 @@ def process_tafs(tafs: List[Dict], errors: Optional[str] = "ignore") -> List[Dic
             # parse TAF from raw text
             report = Taf.from_text(t["report"])
 
-            # get station 
+            # get station
             station = report.station
 
             # unify forecasts
@@ -125,8 +147,7 @@ def process_tafs(tafs: List[Dict], errors: Optional[str] = "ignore") -> List[Dic
 
             for f in forecasts:
                 # get validity period
-                start_time = time_from_reference(
-                    f.validity.start_time, time_iso)
+                start_time = time_from_reference(f.validity.start_time, time_iso)
                 end_time = time_from_reference(f.validity.end_time, time_iso)
 
                 # extract ml features
@@ -141,12 +162,14 @@ def process_tafs(tafs: List[Dict], errors: Optional[str] = "ignore") -> List[Dic
                 # min and max temperatures are special cases ...
                 if f.mintemperature is not None and f.mintemperature.time is not None:
                     report["mintemperature"]["time"] = time_from_reference(
-                        f.mintemperature.time, time_iso).isoformat()
+                        f.mintemperature.time, time_iso
+                    ).isoformat()
 
                 if f.maxtemperature is not None and f.maxtemperature.time is not None:
                     report["maxtemperature"]["time"] = time_from_reference(
-                        f.maxtemperature.time, time_iso).isoformat()
-                
+                        f.maxtemperature.time, time_iso
+                    ).isoformat()
+
                 # append the report
                 reports.append(report)
         except Exception:
@@ -188,7 +211,6 @@ def process_metars(metars: List[Dict], errors: Optional[str] = "ignore") -> List
     return reports
 
 
-
 def machine_learning_features(df: DataFrame) -> DataFrame:
     """Simplifies the weather dataframe
        extracting only the most relevant information for aviation
@@ -205,27 +227,53 @@ def machine_learning_features(df: DataFrame) -> DataFrame:
     for c in df.columns:
         if c.endswith("phenomena"):
             # precipitation
-            status = df[c].str.startswith(
-                tuple(WeatherPrecipitation._member_names_)).fillna(False)
+            status = (
+                df[c]
+                .str.startswith(tuple(WeatherPrecipitation._member_names_))
+                .fillna(False)
+            )
             df["precipitation"] = df["precipitation"] | status
 
+            # important precipitation
             # snow
-            status = df[c].str.contains("SN").fillna(False)
+            status = df[c].str.contains(("SN", "SG")).fillna(False)
             df["snow"] = df["snow"] | status
 
+            # hail
+            status = df[c].str.contains(("GR", "GS")).fillna(False)
+            df["hail"] = df["hail"] | status
+
+            # ice
+            status = df[c].str.contains(("IC", "PL")).fillna(False)
+            df["ice"] = df["ice"] | status
+
             # obscuration
-            status = df[c].str.startswith(
-                tuple(WeatherObscuration._member_names_)).fillna(False)
+            status = (
+                df[c]
+                .str.startswith(tuple(WeatherObscuration._member_names_))
+                .fillna(False)
+            )
             df["obscuration"] = df["obscuration"] | status
 
+            # important obscuration
+            # fog
+            status = df[c].str.contains(("FG")).fillna(False)
+            df["fog"] = df["fog"] | status
+
             # other phenomena
-            status = df[c].str.startswith(
-                tuple(OtherWeather._member_names_)).fillna(False)
+            status = (
+                df[c].str.startswith(tuple(OtherWeather._member_names_)).fillna(False)
+            )
             df["other"] = df["other"] | status
+
         elif c.endswith("descriptor"):
             # thunderstorms
             status = (df[c] == "TS").fillna(False)
             df["thunderstorms"] = df["thunderstorms"] | status
+
+            # showers
+            status = (df[c] == "SH").fillna(False)
+            df["showers"] = df["showers"] | status
 
             # freezing
             status = (df[c] == "FZ").fillna(False)
@@ -233,12 +281,14 @@ def machine_learning_features(df: DataFrame) -> DataFrame:
 
     # general clouds (TCU or CB)
     if "clouds_cloud" in df.columns:
-        df['clouds'] = df["clouds_cloud"].notnull()
+        df["clouds"] = df["clouds_cloud"].notnull()
 
     return df
 
 
-def reports_to_dataframe(reports: List[Dict], drop_invalid: Optional[bool] = False) -> DataFrame:
+def reports_to_dataframe(
+    reports: List[Dict], drop_invalid: Optional[bool] = False
+) -> DataFrame:
     """Converts list of processed reports (METARs or TAFs) to pandas dataframe
     where each row is a report and each column a feature
 
@@ -254,7 +304,13 @@ def reports_to_dataframe(reports: List[Dict], drop_invalid: Optional[bool] = Fal
 
     # convert time columns to datetime
     TIME_COLS = []
-    for c in ["time", "validity_start_time", "validity_end_time", "maxtemperature_time", "mintemperature_time"]:
+    for c in [
+        "time",
+        "validity_start_time",
+        "validity_end_time",
+        "maxtemperature_time",
+        "mintemperature_time",
+    ]:
         if c in df.columns:
             df[c] = to_datetime(df[c], errors="coerce")
             TIME_COLS.append(c)
@@ -264,8 +320,10 @@ def reports_to_dataframe(reports: List[Dict], drop_invalid: Optional[bool] = Fal
         # TAF case
         SPECIFIC_COLS = TAF_SPECIFIC_COLS
         if drop_invalid:
-            df.dropna(subset=["station", "time",
-                      "validity_start_time", "validity_end_time"], inplace=True)
+            df.dropna(
+                subset=["station", "time", "validity_start_time", "validity_end_time"],
+                inplace=True,
+            )
 
         # if max and min temperature times are missing
         for c in ["maxtemperature_time", "mintemperature_time"]:
@@ -289,6 +347,6 @@ def reports_to_dataframe(reports: List[Dict], drop_invalid: Optional[bool] = Fal
     # enforce basic and specific columns
     for c in BASIC_COLS + SPECIFIC_COLS:
         if c not in df.columns:
-            df[c] = None 
+            df[c] = None
 
     return df[BASIC_COLS + TIME_COLS + BOOLEAN_COLS + SPECIFIC_COLS]

@@ -17,7 +17,9 @@ from metafora.utils import (
 from metafora.enums import *
 
 WEATHER_DESCRIPTOR = "|".join(WeatherDescriptor.set())
-WEATHER_PHENOMENA = "|".join(WeatherPrecipitation.set().union(WeatherObscuration.set()).union(OtherWeather.set()))
+WEATHER_PHENOMENA = "|".join(
+    WeatherPrecipitation.set().union(WeatherObscuration.set()).union(OtherWeather.set())
+)
 
 TIME_FORMAT = "(0[0-9]|1[0-9]|2[0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-4])([0-5][0-9])"
 DIRECTION_FMT = "0[0-9][0-9]|1[0-9][0-9]|2[0-9][0-9]|3[0-5][0-9]|360"
@@ -221,6 +223,27 @@ class Visibility:
         return cls(distance=distance, cavok=cavok)
 
 
+class WindShear:
+    """
+    Wind shear class
+    """
+
+    @classmethod
+    def from_text(cls, token: str):
+        """
+        Attempts to parse the wind shear from a token
+
+        :param token: token
+        :return: station instance or None if not successful
+        """
+        found = re.search("^(WS)$", token)
+
+        if not found:
+            return False
+
+        return True
+
+
 @dataclass_json
 @dataclass
 class Weather:
@@ -247,15 +270,15 @@ class Weather:
         :return: weather conditions instance or None if not successful
         """
         expression = (
-                "^([-+]|VC)?("
-                + WEATHER_DESCRIPTOR
-                + ")?("
-                + WEATHER_PHENOMENA
-                + ")?("
-                + WEATHER_PHENOMENA
-                + ")?("
-                + WEATHER_PHENOMENA
-                + ")?(NSW)?$"
+            "^([-+]|VC)?("
+            + WEATHER_DESCRIPTOR
+            + ")?("
+            + WEATHER_PHENOMENA
+            + ")?("
+            + WEATHER_PHENOMENA
+            + ")?("
+            + WEATHER_PHENOMENA
+            + ")?(NSW)?$"
         )
         found = re.search(expression, token)
 
@@ -346,13 +369,18 @@ class Clouds:
                 # VV is an special case
                 if amount == "VV":
                     vertical_visibility = height
-                    height = None 
+                    height = None
 
         # get cloud type
         if found[6] in CloudType.set():
             cloud = found[6]
 
-        return cls(amount=amount, height=height, vertical_visibility=vertical_visibility, cloud=cloud)
+        return cls(
+            amount=amount,
+            height=height,
+            vertical_visibility=vertical_visibility,
+            cloud=cloud,
+        )
 
 
 def clouds_height(clouds: Union[List[Clouds], None]) -> Union[Number, None]:
@@ -410,7 +438,7 @@ def clouds_amount(clouds: Union[List[Clouds], None]) -> Union[Number, None]:
 
     members = CloudCover.list()
     idx = None
-    
+
     for c in clouds:
         if c.amount is not None and c.amount != "VV":
             idx = max(members.index(c.amount), 0 if idx is None else idx)
@@ -421,7 +449,9 @@ def clouds_amount(clouds: Union[List[Clouds], None]) -> Union[Number, None]:
         return None
 
 
-def clouds_vertical_visibility(clouds: Union[List[Clouds], None]) -> Union[Number, None]:
+def clouds_vertical_visibility(
+    clouds: Union[List[Clouds], None]
+) -> Union[Number, None]:
     """
     Computes the vertical_visibility from layers of cloudss
 
@@ -435,11 +465,13 @@ def clouds_vertical_visibility(clouds: Union[List[Clouds], None]) -> Union[Numbe
 
     for c in clouds:
         if c.amount == "VV" and c.vertical_visibility is not None:
-            vertical_visibility = min(c.vertical_visibility, float(
-                "inf") if vertical_visibility is None else vertical_visibility)
+            vertical_visibility = min(
+                c.vertical_visibility,
+                float("inf") if vertical_visibility is None else vertical_visibility,
+            )
 
     return vertical_visibility
-    
+
 
 def simplify_clouds(clouds: List[Clouds]) -> Clouds:
     """

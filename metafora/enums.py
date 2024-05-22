@@ -34,6 +34,7 @@ class CloudCover(CustomEnum):
     """
     Enumerator of cloud covers
     """
+
     FEW = "a few"
     SCT = "scattered"
     BKN = "broken sky"
@@ -45,6 +46,7 @@ class CloudType(CustomEnum):
     """
     Enumerator of cloud types
     """
+
     TCU = "towering cumulus"
     CB = "cumulonimbus"
 
@@ -53,6 +55,7 @@ class WeatherDescriptor(CustomEnum):
     """
     Enumerator of weather descriptors
     """
+
     MI = "shallow"
     PR = "partial"
     BC = "patches of"
@@ -67,6 +70,7 @@ class WeatherPrecipitation(CustomEnum):
     """
     Enumerator of weather precipitation
     """
+
     DZ = "drizzle"
     RA = "rain"
     SN = "snow"
@@ -82,6 +86,7 @@ class WeatherObscuration(CustomEnum):
     """
     Enumerator of weather obscuration
     """
+
     BR = "mist"
     FG = "fog"
     FU = "smoke"
@@ -94,6 +99,7 @@ class OtherWeather(CustomEnum):
     """
     Enumerator of other weather phenomena
     """
+
     PY = "spray"
     VA = "volcanic ash"
     PO = "well-developed dust/sand whirls"
@@ -107,6 +113,7 @@ class RunwayVisualRangeTrend(CustomEnum):
     """
     Enumerator of event tendencies
     """
+
     D = "decreasing"
     U = "increasing"
     N = "no tendency"
@@ -116,6 +123,7 @@ class ChangeEu(CustomEnum):
     """
     Enumerator of change indicators
     """
+
     BECMG = "expected to arise soon"
     TEMPO = "expected to arise temporarily"
     INTER = "expected to arise intermittent"
@@ -125,6 +133,7 @@ class ChangeUS(CustomEnum):
     """
     Enumerator of time indicators
     """
+
     FM = "from"
     AT = "at"
     TL = "until"

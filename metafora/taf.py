@@ -19,8 +19,9 @@ from metafora.common import (
     Clouds,
     Weather,
     Visibility,
+    WindShear,
     TIME_FORMAT,
-    Number
+    Number,
 )
 from metafora.parser import ParserMixIn, sanitise_string
 from metafora.enums import ChangeEu
@@ -202,7 +203,7 @@ class MinimumTemperature:
         time = Timestamp.from_text(str(found[2]) + "00Z")
 
         return cls(value=value, time=time)
-    
+
 
 @dataclass_json
 @dataclass
@@ -238,10 +239,15 @@ class Forecast(ParserMixIn):
     mintemperature: Optional[MinimumTemperature] = field(
         default=None, metadata=config(exclude=lambda x: x is None)
     )
+    wind_shear: Optional[WindShear] = field(
+        default=None, metadata=config(exclude=lambda x: x is None)
+    )
+
     def __post_init__(self):
         if self.validity is None:
             # just for compatibility ... In Python 3.10 we could use kw_only of dataclasses
             raise ValueError("Validity is mandatory in forecasts")
+
 
 """         if self.indicator is None:
             if self.validity.start_time is None and self.validity.end_time is not None:
@@ -280,9 +286,9 @@ class Taf:
         :param token: token
         :return: TAF instance or False if not successful
         """
-        # sanitise 
-        token = sanitise_string(token) 
-        
+        # sanitise
+        token = sanitise_string(token)
+
         # check if it follows a TAF format
         found = re.search(
             "^(PROV\\s)?TAF\\s(AMD\\s|COR\\s)?([A-Z]{4})\\s(" + TIME_FORMAT + "Z)?",

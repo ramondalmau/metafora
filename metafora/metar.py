@@ -19,6 +19,7 @@ from metafora.common import (
     Clouds,
     Weather,
     Number,
+    WindShear,
 )
 from metafora.parser import ParserMixIn
 from metafora.utils import convert_distance, convert_pressure, convert_direction
@@ -210,6 +211,9 @@ class Metar(ParserMixIn):
     pressure: Optional[Pressure] = field(
         default=None, metadata=config(exclude=lambda x: x is None)
     )
+    wind_shear: Optional[WindShear] = field(
+        default=None, metadata=config(exclude=lambda x: x is None)
+    )
 
 
 def runway_info_distance_min(runway_info: List[RunwayVisualRange]) -> RunwayVisualRange:
@@ -218,7 +222,7 @@ def runway_info_distance_min(runway_info: List[RunwayVisualRange]) -> RunwayVisu
 
     :param clouds: list of RVR
     :return: compass and distance
-    """    
+    """
     distance = None
     compass = None
 
@@ -242,7 +246,7 @@ def runway_info_distance_max(runway_info: List[RunwayVisualRange]) -> RunwayVisu
 
     :param clouds: list of RVR
     :return: compass and distance
-    """    
+    """
     distance = None
     compass = None
 
@@ -256,5 +260,5 @@ def runway_info_distance_max(runway_info: List[RunwayVisualRange]) -> RunwayVisu
                 if distance is None or r.distance_max > distance:
                     distance = r.distance_max
                     compass = convert_direction(int(r.runway[:2]))
-                
+
     return RunwayVisualRange(runway=compass, distance=distance)

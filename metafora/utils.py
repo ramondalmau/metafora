@@ -8,25 +8,25 @@ from typing import Union
 Number = Union[float, int]
 
 COMPASS = [
-            "N",
-            "NNE",
-            "NE",
-            "ENE",
-            "E",
-            "ESE",
-            "SE",
-            "SSE",
-            "S",
-            "SSW",
-            "SW",
-            "WSW",
-            "W",
-            "WNW",
-            "NW",
-            "NNW",
-        ]
+    "N",
+    "NNE",
+    "NE",
+    "ENE",
+    "E",
+    "ESE",
+    "SE",
+    "SSE",
+    "S",
+    "SSW",
+    "SW",
+    "WSW",
+    "W",
+    "WNW",
+    "NW",
+    "NNW",
+]
 
-        
+
 def convert_speed(speed: Number, unit: str) -> float:
     """
     Convets speed to meters per second
@@ -42,7 +42,9 @@ def convert_speed(speed: Number, unit: str) -> float:
     elif unit == "MPS":
         return round(speed, 2)
     else:
-        raise ValueError("Unknown speed unit {}. Speed unit must be KT, KPH or MPS".format(unit))
+        raise ValueError(
+            "Unknown speed unit {}. Speed unit must be KT, KPH or MPS".format(unit)
+        )
 
 
 def convert_distance(distance: Number, unit: str) -> float:
@@ -60,7 +62,9 @@ def convert_distance(distance: Number, unit: str) -> float:
     elif unit == "M":
         return round(distance)
     else:
-        raise ValueError("Unknown distance unit {}. Distance unit must be FT, SM or M".format(unit))
+        raise ValueError(
+            "Unknown distance unit {}. Distance unit must be FT, SM or M".format(unit)
+        )
 
 
 def convert_pressure(pressure: Number, unit: str) -> float:
@@ -76,7 +80,9 @@ def convert_pressure(pressure: Number, unit: str) -> float:
     elif unit == "Q":
         return round(pressure)
     else:
-        raise ValueError("Unknown pressure unit {}. Pressure unit must be A or Q".format(unit))
+        raise ValueError(
+            "Unknown pressure unit {}. Pressure unit must be A or Q".format(unit)
+        )
 
 
 def convert_direction(direction: Number) -> str:
